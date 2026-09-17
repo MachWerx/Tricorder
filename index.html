@@ -425,7 +425,7 @@
 
                 <button class="button" data-action="bio">BIO SCAN</button>
                 <button class="button" data-action="atmo">ATMOSPHERE</button>
-                <button class="button" data-action="rad">RADIATION</button>
+                <button class="button" data-action="whistle">WHISTLE</button>
 
                 <button class="button" data-action="magnet">MAGNETIC</button>
                 <button class="button" data-action="gravity">GRAVITY</button>
@@ -460,6 +460,11 @@
         const chirpSound = new Audio('tng_chirp_clean.mp3');
         chirpSound.volume = 0.6;
         chirpSound.loop = false;
+
+        // Intercom Whistle sound
+        const whistleSound = new Audio('intercom_whistle.mp3');
+        whistleSound.volume = 0.6;
+        whistleSound.loop = false;
 
         // Log console
         const logConsole = document.getElementById('logConsole');
@@ -574,6 +579,15 @@
                         log('Chirp pattern detected.');
                         toggleLed(3);
                         setTimeout(() => toggleLed(3), 500);
+                        break;
+                    case 'whistle':
+                        whistleSound.currentTime = 0;
+                        whistleSound.play().catch(err => {
+                            log('Whistle sound play failed: ' + err.message);
+                        });
+                        log('Intercom whistle activated.');
+                        toggleLed(5);
+                        setTimeout(() => toggleLed(5), 800);
                         break;
                     case 'bio':
                         log('Performing biometric scan...');
