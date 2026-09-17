@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tricorder</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: #1a1a1a;
+            font-family: 'Courier New', monospace;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            color: #0f0;
+        }
+
+        /* Tricorder Case */
+        .tricorder {
+            flex: 1;
+            background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 50%, #2d2d2d 100%);
+            border: 4px solid #1f1f1f;
+            border-radius: 12px;
+            margin: 10px;
+            padding: 15px;
+            position: relative;
+            box-shadow:
+                inset 0 0 20px rgba(0,0,0,0.8),
+                0 10px 30px rgba(0,0,0,0.5),
+                0 0 0 2px #333;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Top Screen Section */
+        .screen-section {
+            background: #000;
+            border: 3px solid #444;
+            border-radius: 8px;
+            padding: 10px;
+            position: relative;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #051a05 0%, #000800 100%);
+            border-radius: 4px;
+            padding: 10px;
+            position: relative;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Scan lines effect */
+        .screen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .screen-content {
+            position: relative;
+            z-index: 2;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #0f0;
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+        }
+
+        .status {
+            font-weight: bold;
+            text-shadow: 0 0 5px #0f0;
+        }
+
+        /* Main Display */
+        .readings {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .reading {
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .reading-label {
+            color: #8f8;
+            font-size: 12px;
+            margin-bottom: 3px;
+        }
+
+        .reading-value {
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 0 0 8px #0f0;
+        }
+
+        .reading-unit {
+            font-size: 14px;
+            color: #6c6;
+        }
+
+        /* Bottom Panel */
+        .panel-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .power-bar {
+            height: 8px;
+            background: linear-gradient(90deg, #f00 0%, #ff0 50%, #0f0 100%);
+            border-radius: 4px;
+            border: 1px solid #555;
+            overflow: hidden;
+        }
+
+        .power-fill {
+            height: 100%;
+            width: 100%;
+            background: inherit;
+            animation: powerPulse 2s infinite ease-in-out;
+        }
+
+        @keyframes powerPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Button Grid */
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .button {
+            background: linear-gradient(135deg, #3a3a3a 0%, #252525 100%);
+            border: 2px solid #555;
+            border-radius: 6px;
+            padding: 15px 5px;
+            color: #ccc;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.1s;
+            box-shadow:
+                inset 0 0 5px rgba(0,0,0,0.8),
+                0 3px 5px rgba(0,0,0,0.5);
+            touch-action: manipulation;
+            user-select: none;
+        }
+
+        .button:active {
+            transform: scale(0.96);
+            background: linear-gradient(135deg, #4a4a4a 0%, #353535 100%);
+            box-shadow:
+                inset 0 2px 5px rgba(0,0,0,1),
+                0 1px 2px rgba(0,0,0,0.5);
+            color: #fff;
+        }
+
+        .button.active {
+            border-color: #0f0;
+            color: #0f0;
+            box-shadow:
+                inset 0 0 10px rgba(0,255,0,0.3),
+                0 0 10px rgba(0,255,0,0.5);
+        }
+
+        .button.active:active {
+            background: linear-gradient(135deg, #0f0 0%, #0a0 100%);
+            color: #000;
+        }
+
+        /* LED Indicators */
+        .led-panel {
+            display: flex;
+            gap: 10px;
+            padding: 10px 0;
+        }
+
+        .led {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #333;
+            border: 2px solid #555;
+            position: relative;
+        }
+
+        .led::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #000;
+        }
+
+        .led.on {
+            background: #f00;
+            box-shadow: 0 0 10px #f00;
+            border-color: #f00;
+        }
+
+        .led.on::after {
+            background: #f00;
+        }
+
+        .led.active-led {
+            background: #0f0;
+            box-shadow: 0 0 10px #0f0;
+            border-color: #0f0;
+        }
+
+        .led.active-led::after {
+            background: #0f0;
+        }
+
+        /* Scan Animation */
+        .scan-line {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #0f0;
+            box-shadow: 0 0 10px #0f0;
+            animation: scan 3s linear infinite;
+            opacity: 0.7;
+        }
+
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+
+        /* Log console */
+        .log-console {
+            height: 60px;
+            background: #000;
+            border: 1px solid #222;
+            border-radius: 4px;
+            padding: 5px;
+            font-size: 10px;
+            color: #8f8;
+            overflow-y: auto;
+            font-family: monospace;
+            margin-top: 10px;
+        }
+
+        /* Branding */
+        .branding {
+            text-align: center;
+            font-size: 10px;
+            color: #666;
+            margin-top: 5px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .branding span {
+            color: #0f0;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 360px) {
+            .button { padding: 10px 3px; }
+            .reading-value { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="tricorder">
+        <!-- Top Screen -->
+        <div class="screen-section">
+            <div class="screen">
+                <div class="scan-line"></div>
+                <div class="screen-content">
+                    <div class="header">
+                        <div class="status">TRICORDER ACTIVE</div>
+                        <div class="status">SYNC: ONLINE</div>
+                    </div>
+
+                    <div class="readings">
+                        <div class="reading">
+                            <div class="reading-label">BIOMETRIC SCAN</div>
+                            <div class="reading-value"><span id="bioReadout">98.6</span><span class="reading-unit">°F</span></div>
+                        </div>
+
+                        <div class="reading">
+                            <div class="reading-label">ATMOSPHERE</div>
+                            <div class="reading-value"><span id="atmoReadout">78</span><span class="reading-unit">% N₂</span></div>
+                        </div>
+
+                        <div class="reading">
+                            <div class="reading-label">RADIATION</div>
+                            <div class="reading-value"><span id="radReadout">0.01</span><span class="reading-unit">µSv/h</span></div>
+                        </div>
+
+                        <div class="reading">
+                            <div class="reading-label">MAGNETIC FIELD</div>
+                            <div class="reading-value"><span id="magReadout">0.5</span><span class="reading-unit">Gauss</span></div>
+                        </div>
+
+                        <div class="reading">
+                            <div class="reading-label">GRAVITATIONAL</div>
+                            <div class="reading-value"><span id="gravReadout">1.0</span><span class="reading-unit">g</span></div>
+                        </div>
+
+                        <div class="reading">
+                            <div class="reading-label">CELLULAR HEALTH</div>
+                            <div class="reading-value"><span id="cellReadout">100</span><span class="reading-unit">%</span></div>
+                        </div>
+                    </div>
+
+                    <div class="log-console" id="logConsole">
+                        > System initialized...\n> Waiting for input...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Panel -->
+        <div class="panel-section">
+            <!-- LED Indicators -->
+            <div class="led-panel">
+                <div class="led on" id="led1"></div>
+                <div class="led" id="led2"></div>
+                <div class="led" id="led3"></div>
+                <div class="led" id="led4"></div>
+                <div class="led active-led" id="led5"></div>
+                <div class="led" id="led6"></div>
+            </div>
+
+            <!-- Power Bar -->
+            <div class="power-bar">
+                <div class="power-fill"></div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="button-grid">
+                <button class="button" data-action="scan">SCAN</button>
+                <button class="button" data-action="log">LOG DATA</button>
+                <button class="button" data-action="analyze">ANALYZE</button>
+
+                <button class="button" data-action="bio">BIO SCAN</button>
+                <button class="button" data-action="atmo">ATMOSPHERE</button>
+                <button class="button" data-action="rad">RADIATION</button>
+
+                <button class="button" data-action="magnet">MAGNETIC</button>
+                <button class="button" data-action="gravity">GRAVITY</button>
+                <button class="button" data-action="memory">MEMORY</button>
+            </div>
+
+            <div class="branding">
+                <span>TRI-CORDER</span> MODEL DC-24
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sound effects using Web Audio API
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playTone(freq, type, duration) {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        // Log console
+        const logConsole = document.getElementById('logConsole');
+
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
+            const line = `> [${timestamp}] ${message}`;
+            logConsole.innerHTML += `\n${line}`;
+            logConsole.scrollTop = logConsole.scrollHeight;
+        }
+
+        // Button handlers
+        const buttons = document.querySelectorAll('.button');
+        const readings = {
+            bio: document.getElementById('bioReadout'),
+            atmo: document.getElementById('atmoReadout'),
+            rad: document.getElementById('radReadout'),
+            mag: document.getElementById('magReadout'),
+            grav: document.getElementById('gravReadout'),
+            cell: document.getElementById('cellReadout')
+        };
+
+        // LED elements
+        const leds = [
+            document.getElementById('led1'),
+            document.getElementById('led2'),
+            document.getElementById('led3'),
+            document.getElementById('led4'),
+            document.getElementById('led5'),
+            document.getElementById('led6')
+        ];
+
+        function toggleLed(ledIndex) {
+            const led = leds[ledIndex];
+            led.classList.toggle('active-led');
+        }
+
+        buttons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                // Play sound
+                playTone(800 + Math.random() * 400, 'sine', 0.1);
+
+                const action = button.dataset.action;
+                button.classList.add('active');
+
+                setTimeout(() => {
+                    button.classList.remove('active');
+                }, 200);
+
+                // Handle different button actions
+                switch (action) {
+                    case 'scan':
+                        log('Starting full system scan...');
+                        toggleLed(1);
+                        setTimeout(() => toggleLed(1), 1500);
+                        break;
+                    case 'log':
+                        log('Data logged to memory banks.');
+                        toggleLed(2);
+                        setTimeout(() => toggleLed(2), 500);
+                        break;
+                    case 'analyze':
+                        log('Analyzing sensor data...');
+                        animateReadings(5);
+                        break;
+                    case 'bio':
+                        log('Performing biometric scan...');
+                        animateReadings(3);
+                        toggleLed(3);
+                        break;
+                    case 'atmo':
+                        log('Atmospheric analysis complete.');
+                        animateAtmosphere();
+                        toggleLed(4);
+                        break;
+                    case 'rad':
+                        log('Radiation levels normal.');
+                        animateRadiation();
+                        toggleLed(5);
+                        break;
+                    case 'magnet':
+                        log('Magnetic field sensors active.');
+                        animateReadings(2);
+                        break;
+                    case 'gravity':
+                        log('Gravitational sensors calibrated.');
+                        animateReadings(2);
+                        break;
+                    case 'memory':
+                        log('Memory banks accessed.');
+                        animateReadings(4);
+                        break;
+                }
+            });
+        });
+
+        // Randomly update readings
+        function updateReading(element, min, max, unit) {
+            const value = (Math.random() * (max - min) + min).toFixed(1);
+            element.textContent = value;
+        }
+
+        function animateReadings(intensity) {
+            const readingsCount = Object.keys(readings).length;
+            const interval = setInterval(() => {
+                const keys = Object.keys(readings);
+                for (let i = 0; i < intensity; i++) {
+                    const key = keys[Math.floor(Math.random() * readingsCount)];
+                    updateReading(readings[key], 0, 100);
+                }
+            }, 100);
+
+            setTimeout(() => {
+                clearInterval(interval);
+                log('Scan complete. Data stabilized.');
+            }, 2000);
+        }
+
+        function animateAtmosphere() {
+            let interval = setInterval(() => {
+                const n2 = (Math.random() * 2 + 76).toFixed(1);
+                const o2 = (Math.random() * 2 + 20).toFixed(1);
+                document.querySelector('#atmoReadout + .reading-unit').textContent = `% N₂, ${o2}% O₂`;
+                document.getElementById('atmoReadout').textContent = n2;
+            }, 200);
+
+            setTimeout(() => {
+                clearInterval(interval);
+                document.querySelector('#atmoReadout + .reading-unit').textContent = '% N₂';
+            }, 1500);
+        }
+
+        function animateRadiation() {
+            let interval = setInterval(() => {
+                const rad = (Math.random() * 0.5).toFixed(2);
+                document.getElementById('radReadout').textContent = rad;
+            }, 150);
+
+            setTimeout(() => {
+                clearInterval(interval);
+                document.getElementById('radReadout').textContent = '0.01';
+            }, 1000);
+        }
+
+        // Background reading updates
+        setInterval(() => {
+            if (!document.hidden) {
+                updateReading(readings.bio, 97, 99);
+                updateReading(readings.mag, 0.3, 0.8);
+                updateReading(readings.grav, 0.9, 1.1);
+            }
+        }, 500);
+
+        // Initial log
+        log('System initialized...');
+        log('Waiting for user input...');
+
+        // Prevent double-tap zoom
+        document.addEventListener('dblclick', (e) => {
+            e.preventDefault();
+        });
+    </script>
+</body>
+</html>
