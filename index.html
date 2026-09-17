@@ -427,7 +427,7 @@
                 <button class="button" data-action="atmo">ATMOSPHERE</button>
                 <button class="button" data-action="whistle">WHISTLE</button>
 
-                <button class="button" data-action="magnet">MAGNETIC</button>
+                <button class="button" data-action="redalert">RED ALERT</button>
                 <button class="button" data-action="gravity">GRAVITY</button>
                 <button class="button" data-action="memory">MEMORY</button>
             </div>
@@ -465,6 +465,11 @@
         const whistleSound = new Audio('intercom_whistle.mp3');
         whistleSound.volume = 0.6;
         whistleSound.loop = false;
+
+        // TNG Red Alert 2 sound
+        const redAlertSound = new Audio('tng_redalert2.mp3');
+        redAlertSound.volume = 0.6;
+        redAlertSound.loop = false;
 
         // Log console
         const logConsole = document.getElementById('logConsole');
@@ -589,6 +594,16 @@
                         toggleLed(5);
                         setTimeout(() => toggleLed(5), 800);
                         break;
+                    case 'redalert':
+                        redAlertSound.currentTime = 0;
+                        redAlertSound.play().catch(err => {
+                            log('Red Alert sound play failed: ' + err.message);
+                        });
+                        log('Red Alert initiated!');
+                        for (let i = 0; i < 6; i++) {
+                            setTimeout(() => toggleLed(i), i * 100);
+                        }
+                        break;
                     case 'bio':
                         log('Performing biometric scan...');
                         animateReadings(3);
@@ -598,15 +613,6 @@
                         log('Atmospheric analysis complete.');
                         animateAtmosphere();
                         toggleLed(4);
-                        break;
-                    case 'rad':
-                        log('Radiation levels normal.');
-                        animateRadiation();
-                        toggleLed(5);
-                        break;
-                    case 'magnet':
-                        log('Magnetic field sensors active.');
-                        animateReadings(2);
                         break;
                     case 'gravity':
                         log('Gravitational sensors calibrated.');
