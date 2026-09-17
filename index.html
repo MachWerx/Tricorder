@@ -421,7 +421,7 @@
             <div class="button-grid">
                 <button class="button" data-action="scan">SCAN</button>
                 <button class="button" data-action="transporter">TRANSPORTER</button>
-                <button class="button" data-action="analyze">ANALYZE</button>
+                <button class="button" data-action="chirp">CHIRP</button>
 
                 <button class="button" data-action="bio">BIO SCAN</button>
                 <button class="button" data-action="atmo">ATMOSPHERE</button>
@@ -455,6 +455,11 @@
         const transporterSound = new Audio('tng_transporter6_clean.mp3');
         transporterSound.volume = 0.6;
         transporterSound.loop = false;
+
+        // TNG Chirp 1 sound
+        const chirpSound = new Audio('tng_chirp_clean.mp3');
+        chirpSound.volume = 0.6;
+        chirpSound.loop = false;
 
         // Log console
         const logConsole = document.getElementById('logConsole');
@@ -561,9 +566,14 @@
                         toggleLed(2);
                         setTimeout(() => toggleLed(2), 1500);
                         break;
-                    case 'analyze':
-                        log('Analyzing sensor data...');
-                        animateReadings(5);
+                    case 'chirp':
+                        chirpSound.currentTime = 0;
+                        chirpSound.play().catch(err => {
+                            log('Chirp sound play failed: ' + err.message);
+                        });
+                        log('Chirp pattern detected.');
+                        toggleLed(3);
+                        setTimeout(() => toggleLed(3), 500);
                         break;
                     case 'bio':
                         log('Performing biometric scan...');
