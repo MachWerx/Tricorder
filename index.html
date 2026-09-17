@@ -442,6 +442,14 @@
         // TNG Tricorder Open sound
         const tricorderSound = new Audio('tng_tricorder_open.mp3');
         tricorderSound.volume = 0.6;
+        tricorderSound.loop = false;
+
+        // TNG Tricorder 1 sound (for scan hold)
+        const tricorderScanSound = new Audio('tng_tricorder1.mp3');
+        tricorderScanSound.volume = 0.6;
+        tricorderScanSound.loop = true;
+
+        let scanSoundPlaying = false;
 
         // Sound effects using Web Audio API
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -517,11 +525,39 @@
             log('Flip cover sound played');
         });
 
+        // Scan button hold handler
+        const scanButton = document.querySelector('.button[data-action="scan"]');
+        const scanButtonHandler = (e) => {
+            e.preventDefault();
+
+            if (e.type === 'mousedown' || e.type === 'touchstart') {
+                // Start playing scan sound
+                tricorderScanSound.currentTime = 0;
+                tricorderScanSound.play().catch(err => {
+                    log('Scan sound play failed: ' + err.message);
+                });
+                scanSoundPlaying = true;
+                scanButton.classList.add('active');
+                log('Scan started...');
+            } else if (e.type === 'mouseup' || e.type === 'touchend' || e.type === 'mouseleave') {
+                // Stop playing scan sound
+                if (scanSoundPlaying) {
+                    tricorderScanSound.pause();
+                    tricorderScanSound.currentTime = 0;
+                    scanSoundPlaying = false;
+                    scanButton.classList.remove('active');
+                    log('Scan stopped.');
+                }
+            }
+        };
+
+        // Add both mouse and touch event listeners for scan button
+        ['mousedown', 'touchstart', 'mouseup', 'touchend', 'mouseleave'].forEach(event => {
+            scanButton.addEventListener(event, scanButtonHandler);
+        });
+
         buttons.forEach(button => {
             button.addEventListener('click', (e) => {
-                // Play sound
-                playTone(800 + Math.random() * 400, 'sine', 0.1);
-
                 const action = button.dataset.action;
                 button.classList.add('active');
 
@@ -532,9 +568,7 @@
                 // Handle different button actions
                 switch (action) {
                     case 'scan':
-                        log('Starting full system scan...');
-                        toggleLed(1);
-                        setTimeout(() => toggleLed(1), 1500);
+                        // Scan button uses hold-to-play, skip click handler
                         break;
                     case 'log':
                         log('Data logged to memory banks.');
