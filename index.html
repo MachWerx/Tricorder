@@ -238,7 +238,7 @@
         }
 
         .sound-pad::before {
-            content: 'TNG TRICORDER';
+            content: 'FLIP COVER';
             font-size: 10px;
             color: #666;
             font-family: 'Courier New', monospace;
@@ -322,6 +322,8 @@
             overflow-y: auto;
             font-family: monospace;
             margin-top: 10px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
 
         /* Branding */
@@ -390,9 +392,7 @@
                         </div>
                     </div>
 
-                    <div class="log-console" id="logConsole">
-                        > System initialized...\n> Waiting for input...
-                    </div>
+                    <div class="log-console" id="logConsole"></div>
                 </div>
             </div>
         </div>
@@ -469,8 +469,8 @@
 
         function log(message) {
             const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
-            const line = `> [${timestamp}] ${message}`;
-            logConsole.innerHTML += `\n${line}`;
+            const line = `> [${timestamp}] ${message}\n`;
+            logConsole.innerHTML += line;
             logConsole.scrollTop = logConsole.scrollHeight;
         }
 
@@ -503,7 +503,7 @@
         // Sound pad click handler
         const soundPad = document.getElementById('soundPad');
         soundPad.addEventListener('click', () => {
-            // Try to play the external sound
+            // Try to play the sound
             tricorderSound.currentTime = 0;
             tricorderSound.play().catch(err => {
                 log('Audio play failed: ' + err.message);
@@ -511,9 +511,8 @@
 
             // Visual feedback
             soundPad.classList.add('active');
-            playTone(600, 'triangle', 0.15);
             setTimeout(() => soundPad.classList.remove('active'), 300);
-            log('TNG Tricorder Open sound played');
+            log('Flip cover sound played');
         });
 
         buttons.forEach(button => {
