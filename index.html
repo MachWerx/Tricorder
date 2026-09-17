@@ -420,7 +420,7 @@
             <!-- Buttons -->
             <div class="button-grid">
                 <button class="button" data-action="scan">SCAN</button>
-                <button class="button" data-action="log">LOG DATA</button>
+                <button class="button" data-action="transporter">TRANSPORTER</button>
                 <button class="button" data-action="analyze">ANALYZE</button>
 
                 <button class="button" data-action="bio">BIO SCAN</button>
@@ -451,28 +451,10 @@
 
         let scanSoundPlaying = false;
 
-        // Sound effects using Web Audio API
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-        function playTone(freq, type, duration) {
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-
-            osc.type = type;
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-
-            osc.start();
-            osc.stop(audioCtx.currentTime + duration);
-        }
+        // TNG Transporter 6 sound
+        const transporterSound = new Audio('tng_transporter6_clean.mp3');
+        transporterSound.volume = 0.6;
+        transporterSound.loop = false;
 
         // Log console
         const logConsole = document.getElementById('logConsole');
@@ -570,10 +552,14 @@
                     case 'scan':
                         // Scan button uses hold-to-play, skip click handler
                         break;
-                    case 'log':
-                        log('Data logged to memory banks.');
+                    case 'transporter':
+                        transporterSound.currentTime = 0;
+                        transporterSound.play().catch(err => {
+                            log('Transporter sound play failed: ' + err.message);
+                        });
+                        log('Transporter cycle initiated.');
                         toggleLed(2);
-                        setTimeout(() => toggleLed(2), 500);
+                        setTimeout(() => toggleLed(2), 1500);
                         break;
                     case 'analyze':
                         log('Analyzing sensor data...');
