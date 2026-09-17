@@ -207,6 +207,49 @@
             display: flex;
             gap: 10px;
             padding: 10px 0;
+            align-items: center;
+        }
+
+        /* Sound pad area to the right of LEDs */
+        .sound-pad {
+            flex: 1;
+            height: 30px;
+            background: linear-gradient(90deg, #2a2a2a 0%, #1f1f1f 100%);
+            border: 2px solid #333;
+            border-radius: 6px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow:
+                inset 0 0 10px rgba(0,0,0,0.8),
+                0 2px 4px rgba(0,0,0,0.5);
+            user-select: none;
+        }
+
+        .sound-pad:active {
+            transform: scale(0.98);
+            background: linear-gradient(90deg, #3a3a3a 0%, #2a2a2a 100%);
+            box-shadow:
+                inset 0 0 15px rgba(0,255,0,0.3),
+                0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .sound-pad::before {
+            content: 'TNG TRICORDER';
+            font-size: 10px;
+            color: #666;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+        }
+
+        .sound-pad.active {
+            border-color: #0f0;
+            box-shadow:
+                inset 0 0 15px rgba(0,255,0,0.4),
+                0 0 10px rgba(0,255,0,0.3);
         }
 
         .led {
@@ -364,6 +407,7 @@
                 <div class="led" id="led4"></div>
                 <div class="led active-led" id="led5"></div>
                 <div class="led" id="led6"></div>
+                <div class="sound-pad" id="soundPad"></div>
             </div>
 
             <!-- Power Bar -->
@@ -393,6 +437,10 @@
     </div>
 
     <script>
+        // TNG Tricorder Open sound
+        const tricorderSound = new Audio('tng_tricorder_open.mp3');
+        tricorderSound.volume = 0.6;
+
         // Sound effects using Web Audio API
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -451,6 +499,22 @@
             const led = leds[ledIndex];
             led.classList.toggle('active-led');
         }
+
+        // Sound pad click handler
+        const soundPad = document.getElementById('soundPad');
+        soundPad.addEventListener('click', () => {
+            // Try to play the external sound
+            tricorderSound.currentTime = 0;
+            tricorderSound.play().catch(err => {
+                log('Audio play failed: ' + err.message);
+            });
+
+            // Visual feedback
+            soundPad.classList.add('active');
+            playTone(600, 'triangle', 0.15);
+            setTimeout(() => soundPad.classList.remove('active'), 300);
+            log('TNG Tricorder Open sound played');
+        });
 
         buttons.forEach(button => {
             button.addEventListener('click', (e) => {
